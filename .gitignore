@@ -1,0 +1,19 @@
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Project outputs
+Myapp.exe
+Answers.txt
+Exercises.txt
+Grade.txt
+
+# Editors/IDE
+.vscode/
+.idea/
+.DS_Store
