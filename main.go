@@ -10,6 +10,7 @@ import (
     "path/filepath"
     "strings"
     "time"
+    "runtime/pprof"
 )
 
 func main() {
@@ -23,6 +24,10 @@ func main() {
     efile := flag.String("e", "", "题目文件路径（判分模式）")
     afile := flag.String("a", "", "答案文件路径（判分模式）")
 
+    // Performance flags
+    cpuprofile := flag.String("cpuprofile", "", "CPU性能分析输出文件（例如 cpu.prof）")
+    memprofile := flag.String("memprofile", "", "内存性能分析输出文件（例如 mem.prof）")
+
     flag.Usage = func() {
         exe := filepath.Base(os.Args[0])
         fmt.Fprintf(os.Stderr, "用法:\n")
@@ -34,6 +39,37 @@ func main() {
     }
 
     flag.Parse()
+
+    // Start CPU profiling if requested
+    var stopCPU func()
+    if *cpuprofile != "" {
+        f, err := os.Create(*cpuprofile)
+        if err != nil {
+            fmt.Fprintln(os.Stderr, "无法创建CPU分析文件：", err)
+        } else {
+            if err := pprof.StartCPUProfile(f); err != nil {
+                fmt.Fprintln(os.Stderr, "启动CPU分析失败：", err)
+                f.Close()
+            } else {
+                stopCPU = func() {
+                    pprof.StopCPUProfile()
+                    f.Close()
+                }
+            }
+        }
+    }
+    // Write heap profile on exit if requested
+    if *memprofile != "" {
+        defer func() {
+            f, err := os.Create(*memprofile)
+            if err != nil {
+                fmt.Fprintln(os.Stderr, "无法创建内存分析文件：", err)
+                return
+            }
+            pprof.WriteHeapProfile(f)
+            f.Close()
+        }()
+    }
 
     // Decide mode
     if *efile != "" || *afile != "" {
@@ -47,6 +83,7 @@ func main() {
             fmt.Fprintln(os.Stderr, "判分失败：", err)
             os.Exit(1)
         }
+        if stopCPU != nil { stopCPU() }
         return
     }
 
@@ -78,6 +115,7 @@ func main() {
     }
 
     fmt.Printf("已生成 %d 道题目到 Exercises.txt，并写入答案到 Answers.txt\n", len(exercises))
+    if stopCPU != nil { stopCPU() }
 }
 
 func writeLines(path string, lines []string) error {

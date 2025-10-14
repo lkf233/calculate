@@ -7,7 +7,8 @@ import (
 
 // GenerateProblems generates n unique problems under constraints with value range r
 func GenerateProblems(n, r int) ([]string, []string, error) {
-    seen := make(map[string]struct{})
+    // 预估容量，减少哈希表扩容与重新哈希的开销
+    seen := make(map[string]struct{}, n*2)
     exercises := make([]string, 0, n)
     answers := make([]string, 0, n)
 
