@@ -8,10 +8,11 @@
 *.out
 
 # Project outputs
-Myapp.exe
-Answers.txt
-Exercises.txt
-Grade.txt
+# 以下文件需要提交到仓库
+!Myapp.exe
+!Answers.txt
+!Exercises.txt
+!Grade.txt
 
 # Editors/IDE
 .vscode/
